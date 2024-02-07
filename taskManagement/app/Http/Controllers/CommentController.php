@@ -31,11 +31,8 @@ class CommentController extends Controller
         }else{
             $comments = Comment::paginate($itemPerPage);
         }
-
-        return response()->json([
-            'data' => $comments
-        ], 200);
-
+        $json['data']=$comments;
+        return Response::json($json);
     }
 
     /**
@@ -46,7 +43,25 @@ class CommentController extends Controller
      */
     public function store(Request $request)
     {
-        //
+        
+        $request->validate([
+            'comment' => 'required|string|unique:comments',
+            'user_id' => 'required|integer|exists:users,id',
+            'post_id' => 'required|integer|exists:posts,id',
+        ]);
+
+        $comment = new Comment([
+            'comment' => $request->comment,
+            'user_id' => $request->user_id,
+            'post_id' => $request->post_id
+        ]);
+        if($comment->save()){
+            return response()->json([
+                'message' => 'Successfully created comment!'
+            ], 201);
+        }else{
+            return response()->json(['error'=>'Provide proper details']);
+        }
     }
 
     /**
@@ -55,9 +70,21 @@ class CommentController extends Controller
      * @param  \App\Comment  $comment
      * @return \Illuminate\Http\Response
      */
-    public function show(Comment $comment)
+    public function show($id)
     {
-        //
+        return Post::find($id);
+    }
+
+
+    /**
+     * Display the specified resource.
+     *
+     * @param  \App\Post  $post
+     * @return \Illuminate\Http\Response
+     */
+    public function showAll()
+    {
+        return Post::all();
     }
 
     /**
@@ -67,9 +94,34 @@ class CommentController extends Controller
      * @param  \App\Comment  $comment
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Comment $comment)
+    public function update(Request $request)
     {
-        //
+        $post = Post::find($request->id);
+        $request->validate([
+            'title' => 'required|string|min:3|max:255',
+            'content' => 'required|string',
+            'user_id'=> 'required|integer|exists:users,id',
+            'id'=> 'required|integer|exists:posts,id',
+        ]);
+        
+        if($post){
+            $post = Post ::find($request->id)->update([
+                'title' => $request->title,
+                'content' => $request->content,
+                'user_id' => $request->user_id              
+            ]);
+            
+            if($post){
+                return response()->json([
+                    'message' => 'Successfully updated post!',
+                    'data'=> Post ::find($request->id)
+                ], 201);
+            }else{
+                return response()->json(['error'=>'Provide proper details']);
+            }
+        }else{
+            return response()->json(['error'=>'Provide proper details']);
+        }
     }
 
     /**
@@ -78,8 +130,14 @@ class CommentController extends Controller
      * @param  \App\Comment  $comment
      * @return \Illuminate\Http\Response
      */
-    public function destroy(Comment $comment)
+    public function destroy(Request $request)
     {
-        //
+        $request->validate([
+            'id'=> 'required|integer|exists:comments,id',
+        ]);
+        Post::find($request->id)->delete(); 
+        return response()->json([
+            'message' => 'Successfully deleted comments!'
+        ], 204);
     }
 }

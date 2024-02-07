@@ -3,6 +3,7 @@
 namespace App\Http\Controllers;
 
 use App\Post;
+use App\Comment;
 use Illuminate\Http\Request;
 
 use Illuminate\Support\Facades\Auth;
@@ -35,7 +36,7 @@ class PostController extends Controller
         return Response::json($json);
     }
 
-    
+
     /**
      * Store a newly created resource in storage.
      *
@@ -105,44 +106,35 @@ class PostController extends Controller
      * @param  \App\Post  $post
      * @return \Illuminate\Http\Response
      */
-    public function update(Request $request, Post $post)
+    public function update(Request $request)
     {
+        $post = Post::find($request->id);
         $request->validate([
-            'title' => 'required|string|min:3|max:255|unique:posts',
+            'title' => 'required|string|min:3|max:255',
             'content' => 'required|string',
-            'user_id'=>'required|integer',
+            'user_id'=> 'required|integer|exists:users,id',
+            'id'=> 'required|integer|exists:posts,id',
         ]);
         
-        $post = post ::find($id)->update([
-            'title' => $request->title,
-            'content' => $request->content,
-            'user_id' => $request->user_id              
-        ]);
-        
-
-        //if($post->save()){
         if($post){
-            return response()->json([
-                'message' => 'Successfully updated post!'
-            ], 201);
+            $post = Post ::find($request->id)->update([
+                'title' => $request->title,
+                'content' => $request->content,
+                'user_id' => $request->user_id              
+            ]);
+            
+            if($post){
+                return response()->json([
+                    'message' => 'Successfully updated post!',
+                    'data'=> Post ::find($request->id)
+                ], 201);
+            }else{
+                return response()->json(['error'=>'Provide proper details']);
+            }
         }else{
             return response()->json(['error'=>'Provide proper details']);
         }
 
-        //$task = Task::find($id);
-        ////$data = $request->all();
-        //if($task){
-        //    $task->update($request->all());
-        //    //$resp['code']=200;
-        //    //$resp['error']=false;
-        //    $resp['data']=$task;
-        //    return Response::json($resp);
-        //}else{
-        //    $resp['code']=200;
-        //    $resp['error']=true;
-        //    $resp['data']="";
-        //    return Response::json($resp);
-        //}
     }
 
     /**
@@ -151,26 +143,36 @@ class PostController extends Controller
      * @param  \App\Post  $post
      * @return \Illuminate\Http\Response
      */
-    public function destroy($id)
+    public function destroy(Request $request)
     {
-        //  $post = Post::findOrFail($id);
-        //  $post->delete();
-        //  return 204;
-
-        $post = Post::find($id);
-        if($post){
-            Post::find($id)->delete(); 
-            $resp['code']=204;
-            $resp['error']=false;    
-            $resp['message']='Post is deleted successfully.';
-            $resp['data']='';
-            return Response::json($resp);
-        }else{
-            $resp['code']=200;
-            $resp['error']=true;
-            $resp['message']='Id not found.';
-            $resp['data']="";
-            return Response::json($resp);
-        }
+        $request->validate([
+            'id'=> 'required|integer|exists:posts,id',
+        ]);
+        Post::find($request->id)->delete(); 
+        return response()->json([
+            'message' => 'Successfully deleted post!'
+        ], 204);
     }
+
+
+    //Show comments by id
+    public function showComment(Request $request)
+    {
+       
+        //$comments = Comment::find($request->post_id);
+        $request->validate([
+            'user_id'=> 'required|integer|exists:users,id',
+            'post_id'=> 'required|integer|exists:posts,id|exists:comments,id',
+        ]);
+        
+        $comments = Comment::where('post_id' ,'=', $request->post_id )
+        ->where('user_id' ,'=', $request->user_id )->get();
+
+        return response()->json([
+                    'message' => 'data!',
+                    'data'=> $comments
+                ], 200);
+
+    }
+
 }
