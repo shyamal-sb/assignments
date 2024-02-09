@@ -2,13 +2,21 @@
 
 namespace App\Http\Controllers;
 
-use App\Comment;
+use Carbon\Carbon;
+
+//use App\Models\User;
+
+use App\Models\Post;
+use App\Models\Comment;
 use Illuminate\Http\Request;
 
+use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
-use App\User;
-use Validator;
+use Illuminate\Support\Facades\Validator;
+
+use App\Http\Requests\StoreCommentRequest;
+use \Staudenmeir\EloquentEagerLimit\HasEagerLimit;
+
 
 class CommentController extends Controller
 {
@@ -17,127 +25,128 @@ class CommentController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function index()
+    public function indextest(Request $request)
     {
         
-        $comments =array();
+        //$comments =array();
+        //$itemPerPage = 10;
+        //$search = $request['search'] ?? "";
+        //$sortby = $request['sortby'] ?? "ASC";
+        //if($request->has('per_page'))  $itemPerPage=$request->per_page;
+        //if($search !=""){ 
+        //    $comments = Comment::where('title', 'like',  '%' . $search . '%')->orderBy('created_at', $sortby);
+        //    $comments = $comments->paginate($itemPerPage);
+        //}else{
+        //    $comments = Comment::paginate($itemPerPage);
+        //}
+        //$json['data']=$comments;
+        //return response()->json(['data'=>$comments]);
+    }
+
+    public function index(Request $request)
+    {
+        $comments = auth()->user()->comments;
+        var_dump($comments);exit;
         $itemPerPage = 10;
         $search = $request['search'] ?? "";
         $sortby = $request['sortby'] ?? "ASC";
         if($request->has('per_page'))  $itemPerPage=$request->per_page;
         if($search !=""){ 
-            $comments = Comment::where('title', 'like',  '%' . $search . '%')->orderBy('created_at', $sortby);
+            //$comments = Comment::where('title', 'like',  '%' . $search . '%')->orderBy('created_at', $sortby);
+            $comments = auth()->user()->comments::where('title', 'like',  '%' . $search . '%')->orderBy('created_at', $sortby);
             $comments = $comments->paginate($itemPerPage);
         }else{
-            $comments = Comment::paginate($itemPerPage);
+            $comments = auth()->user()->comments::paginate($itemPerPage);
         }
-        $json['data']=$comments;
-        return Response::json($json);
-    }
 
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     */
-    public function store(Request $request)
-    {
-        
-        $request->validate([
-            'comment' => 'required|string|unique:comments',
-            'user_id' => 'required|integer|exists:users,id',
-            'post_id' => 'required|integer|exists:posts,id',
+        return response()->json([
+            'success' => true,
+            'data' => $comments
         ]);
-
-        $comment = new Comment([
-            'comment' => $request->comment,
-            'user_id' => $request->user_id,
-            'post_id' => $request->post_id
-        ]);
-        if($comment->save()){
-            return response()->json([
-                'message' => 'Successfully created comment!'
-            ], 201);
-        }else{
-            return response()->json(['error'=>'Provide proper details']);
-        }
     }
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Comment  $comment
-     * @return \Illuminate\Http\Response
-     */
+ 
     public function show($id)
     {
-        return Post::find($id);
+        $comment = auth()->user()->comments->find($id);
+ 
+        if (!$comment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Comment not found '
+            ], 400);
+        }
+ 
+        return response()->json([
+            'success' => true,
+            'data' => $comment->toArray()
+        ], 400);
     }
-
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Post  $post
-     * @return \Illuminate\Http\Response
-     */
-    public function showAll()
+ 
+    public function store(StoreCommentRequest $request)
     {
-        return Post::all();
-    }
 
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Comment  $comment
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request)
-    {
-        $post = Post::find($request->id);
-        $request->validate([
-            'title' => 'required|string|min:3|max:255',
-            'content' => 'required|string',
-            'user_id'=> 'required|integer|exists:users,id',
-            'id'=> 'required|integer|exists:posts,id',
-        ]);
+        $data = $request->only(['comment', 'post_id', 'user_id']);
+        $data['comment'] = $request->comment;
+        $data['post_id'] = $request->post_id;
+        $data['user_id'] = $request->user_id;
+        $data['approval_status'] = 'unapproved';
+        $data['published_at'] = date("Y-m-d H:i:s");
         
-        if($post){
-            $post = Post ::find($request->id)->update([
-                'title' => $request->title,
-                'content' => $request->content,
-                'user_id' => $request->user_id              
+        $result = Comment::create($data);
+        return response()->json([
+            'success' => (bool)$result,
+            'message' => " Added Successfully",
+            'data' => $result->toArray(),
+            'status' => 200
+        ]);
+
+    }
+ 
+    public function update(StoreCommentRequest $request, $id)
+    {
+        $comment = auth()->user()->comments->find($id);
+ 
+        if (!$comment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'comment not found'
+            ], 400);
+        }
+
+        $data = $request->all();
+        $result = Comment::where('id', $id)->update($data);
+        var_dump($result);
+        $updated_data = auth()->user()->comments->find($id);
+        return response()->json([
+            'success' => (bool)$result,
+            'message' => "Updated Successfully",
+            'updated_data' => $updated_data,
+            'status' => 200
+        ]);
+
+    }
+ 
+    public function destroy($id)
+    {
+        $comment = auth()->user()->comments->find($id);
+ 
+        if (!$comment) {
+            return response()->json([
+                'success' => false,
+                'message' => 'comment not found'
+            ], 400);
+        }
+ 
+        if ($comment->delete()) {
+            return response()->json([
+                'success' => true
             ]);
-            
-            if($post){
-                return response()->json([
-                    'message' => 'Successfully updated post!',
-                    'data'=> Post ::find($request->id)
-                ], 201);
-            }else{
-                return response()->json(['error'=>'Provide proper details']);
-            }
-        }else{
-            return response()->json(['error'=>'Provide proper details']);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Post can not be deleted'
+            ], 500);
         }
     }
 
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Comment  $comment
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Request $request)
-    {
-        $request->validate([
-            'id'=> 'required|integer|exists:comments,id',
-        ]);
-        Post::find($request->id)->delete(); 
-        return response()->json([
-            'message' => 'Successfully deleted comments!'
-        ], 204);
-    }
 }

@@ -1,178 +1,127 @@
 <?php
 
 namespace App\Http\Controllers;
-
-use App\Post;
-use App\Comment;
-use Illuminate\Http\Request;
-
-use Illuminate\Support\Facades\Auth;
 use Carbon\Carbon;
-use App\User;
-use Validator;
-use Response;
+use App\Models\Post;
+use App\Models\User;
+use App\Models\Comment;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Http\Requests\StorePostRequest;
+use Illuminate\Database\Eloquent\Builder;
+use \Staudenmeir\EloquentEagerLimit\HasEagerLimit;
 
 class PostController extends Controller
 {
-    /**
-     * Display a listing of the resource.
-     *
-     * @return \Illuminate\Http\Response
-     */
-    public function index(Request $request)
+    
+    public function index()
     {
-        $posts =array();
+        $posts = auth()->user()->posts;
+        //$post = auth()->user()->posts->find(3);
+        //$comments = auth()->user()->comments()->find(3);
+ 
+        return response()->json([
+            'success' => true,
+            'data' => $posts
+        ]);
+
+    }
+ 
+
+    public function allpostcomments(Request $request){
+        $comments = Comment::paginate(3);
+        //post/allpostcomments
+        var_dump($comments); 
+        //exit("Ends here for all comments");
+        //var_dump($comments);
         $itemPerPage = 10;
         $search = $request['search'] ?? "";
         $sortby = $request['sortby'] ?? "ASC";
         if($request->has('per_page'))  $itemPerPage=$request->per_page;
         if($search !=""){ 
-            $posts = Post::where('title', 'like',  '%' . $search . '%')->orderBy('created_at', $sortby);
-            $posts = $posts->paginate($itemPerPage);
+            //$comments = auth()->user()->comments->where('title', 'like',  '%' . $search . '%')->orderBy('created_at', $sortby);
+            $comments = auth()->user()->comments::where('title', 'like',  '%' . $search . '%')->orderBy('created_at', $sortby);
+            $comments = $comments->paginate($itemPerPage);
         }else{
-            $posts = Post::paginate($itemPerPage);
-        }
-        $json['data']=$posts;
-        return Response::json($json);
-    }
-
-
-    /**
-     * Store a newly created resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @return \Illuminate\Http\Response
-     * @param  [string] title
-     * @param  [string] content
-     * @param  [integer] user_id 
-     * @param  [datetime] published_at
-     * @return [string] message
-    */
-    public function store(Request $request)
-    {
-        //$chk_token = $request->bearerToken();
-        //if(empty($chk_token)){
-        //    return response()->json(['error'=>'Login with correct credentials']);
-        //}
-
-        $request->validate([
-            'title' => 'required|string|min:3|max:255|unique:posts',
-            'content' => 'required|string',
-            'user_id' => 'required|integer|exists:posts,id',
-        ]);
-
-        $post = new Post([
-            'title' => $request->title,
-            'content' => $request->content,
-            'user_id' => $request->user_id
-        ]);
-        if($post->save()){
-            return response()->json([
-                'message' => 'Successfully created post!'
-            ], 201);
-        }else{
-            return response()->json(['error'=>'Provide proper details']);
+            //$comments = auth()->user()->comments->where('user_id', Auth::id())->paginate($itemPerPage);
+            $comments = auth()->user()->comments::paginate($itemPerPage);
+            //$comments = $comments->paginate($itemPerPage);
         }
 
+        return response()->json([
+            'success' => true,
+            'data' => $comments
+        ]);
     }
 
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Post  $post
-     * @return \Illuminate\Http\Response
-     */
     public function show($id)
     {
-        return Post::find($id);
-    }
-
-
-    /**
-     * Display the specified resource.
-     *
-     * @param  \App\Post  $post
-     * @return \Illuminate\Http\Response
-     */
-    public function showAll()
-    {
-        return Post::all();
-    }
-
-    /**
-     * Update the specified resource in storage.
-     *
-     * @param  \Illuminate\Http\Request  $request
-     * @param  \App\Post  $post
-     * @return \Illuminate\Http\Response
-     */
-    public function update(Request $request)
-    {
-        $post = Post::find($request->id);
-        $request->validate([
-            'title' => 'required|string|min:3|max:255',
-            'content' => 'required|string',
-            'user_id'=> 'required|integer|exists:users,id',
-            'id'=> 'required|integer|exists:posts,id',
-        ]);
-        
-        if($post){
-            $post = Post ::find($request->id)->update([
-                'title' => $request->title,
-                'content' => $request->content,
-                'user_id' => $request->user_id              
-            ]);
-            
-            if($post){
-                return response()->json([
-                    'message' => 'Successfully updated post!',
-                    'data'=> Post ::find($request->id)
-                ], 201);
-            }else{
-                return response()->json(['error'=>'Provide proper details']);
-            }
-        }else{
-            return response()->json(['error'=>'Provide proper details']);
+        $post = auth()->user()->posts->find($id);
+ 
+        if (!$post) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Post not found '
+            ], 400);
         }
-
-    }
-
-    /**
-     * Remove the specified resource from storage.
-     *
-     * @param  \App\Post  $post
-     * @return \Illuminate\Http\Response
-     */
-    public function destroy(Request $request)
-    {
-        $request->validate([
-            'id'=> 'required|integer|exists:posts,id',
-        ]);
-        Post::find($request->id)->delete(); 
+ 
         return response()->json([
-            'message' => 'Successfully deleted post!'
-        ], 204);
+            'success' => true,
+            'data' => $post->toArray()
+        ], 400);
     }
-
-
-    //Show comments by id
-    public function showComment(Request $request)
+ 
+    public function store(StorePostRequest $request)
     {
-       
-        //$comments = Comment::find($request->post_id);
-        $request->validate([
-            'user_id'=> 'required|integer|exists:users,id',
-            'post_id'=> 'required|integer|exists:posts,id|exists:comments,id',
+        $data = $request->all();
+        $data['title'] = $request->title;
+        $data['content'] = $request->content;
+        $data['user_id'] = $request->user_id;
+        $data['published_at'] = date("Y-m-d H:i:s");
+        
+        $result = Comment::create($data);
+        return response()->json([
+            'success' => (bool)$result,
+            'message' => "Action Added Successfully",
+            'data' => $result->toArray(),
+            'status' => 200
+        ]);
+    }
+ 
+    public function update(StorePostRequest $request, $id)
+    {
+
+        $data = $request->all();
+        $result = Post::where('_id', $id)->update($data);
+        return response()->json([
+            'success' => (bool)$result,
+            'message' => "Updated Successfully",
+            'status' => 200
         ]);
         
-        $comments = Comment::where('post_id' ,'=', $request->post_id )
-        ->where('user_id' ,'=', $request->user_id )->get();
-
-        return response()->json([
-                    'message' => 'data!',
-                    'data'=> $comments
-                ], 200);
-
+    }
+ 
+    public function destroy($id)
+    {
+        $post = auth()->user()->posts->find($id);
+ 
+        if (!$post) {
+            return response()->json([
+                'success' => false,
+                'message' => 'Post not found'
+            ], 400);
+        }
+ 
+        if ($post->delete()) {
+            return response()->json([
+                'success' => true
+            ]);
+        } else {
+            return response()->json([
+                'success' => false,
+                'message' => 'Post can not be deleted'
+            ], 500);
+        }
     }
 
 }

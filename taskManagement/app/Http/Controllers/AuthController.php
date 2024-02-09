@@ -2,13 +2,12 @@
 
 namespace App\Http\Controllers;
 
-use Illuminate\Http\Request;
-
-use Illuminate\Support\Facades\Auth;
-use Carbon\Carbon;
-use App\User;
-//use App\Models\User;
 use Validator;
+use Carbon\Carbon;
+use App\Models\User;
+//use App\User;
+use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
 
 class AuthController extends Controller
 {
@@ -31,14 +30,20 @@ class AuthController extends Controller
             'confirm_password'=>'required|same:password',
         ]);
 
-        $user = new User([
+        $user = User::create([
             'name' => $request->name,
             'email' => $request->email,
             'password' => bcrypt($request->password)
         ]);
-        if($user->save()){
+       
+        $token = $user->createToken('LaravelAuthApp')->accessToken;
+ 
+        //return response()->json(['token' => $token], 200);
+
+        if($user){
             return response()->json([
-                'message' => 'Successfully created user!'
+                'message' => 'Successfully created user!',
+                'token' => $token,
             ], 201);
         }else{
             return response()->json(['error'=>'Provide proper details']);
@@ -63,24 +68,33 @@ class AuthController extends Controller
             'password' => 'required|string',
             'remember_me' => 'boolean'
         ]);
-        $credentials = request(['email', 'password']);
-        if(!Auth::attempt($credentials))
-        return response()->json([
-            'message' => 'Unauthorized'
-        ], 401);
-        $user = $request->user();
-        $tokenResult = $user->createToken('Personal Access Token');
-        $token = $tokenResult->token;
-        if ($request->remember_me)
-        $token->expires_at = Carbon::now()->addWeeks(1);
-        $token->save();
-        return response()->json([
-            'access_token' => $tokenResult->accessToken,
-            'token_type' => 'Bearer',
-            'expires_at' => Carbon::parse(
-                $tokenResult->token->expires_at
-            )->toDateTimeString()
-        ]);
+
+        $data = [
+            'email' => $request->email,
+            'password' => $request->password
+        ];
+
+        if(Auth::attempt($data, $request->remember)) 
+        {
+    
+            $user = Auth::user();
+            //$success['token'] =  $request->user()->createToken('MyApp')->accessToken;
+            $user = $request->user();
+            $tokenResult = $user->createToken('Personal Access Token');
+            $token = $tokenResult->token;
+           
+            if ($request->remember_me)
+            $token->expires_at = Carbon::now()->addWeeks(1);
+            $token->save();
+            $success['token'] = $tokenResult->accessToken;
+            $success['token_type'] = 'Bearer';
+            $success['expires_at'] = Carbon::parse($token->expires_at)->toDateTimeString();
+            $success['user_data'] = $user;
+
+            return response()->json(['success' => $success], 200);
+    
+        }
+        return response()->json(['error'=>'Unauthorised'], 401);
     }
 
     //Users Method to get all users    
