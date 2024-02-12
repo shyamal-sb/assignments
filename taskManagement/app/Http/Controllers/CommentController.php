@@ -7,15 +7,18 @@ use Carbon\Carbon;
 //use App\Models\User;
 
 use App\Models\Post;
+use App\Models\User;
 use App\Models\Comment;
-use Illuminate\Http\Request;
 
+use Illuminate\Http\Request;
 use Illuminate\Routing\Controller;
 use Illuminate\Support\Facades\Auth;
-use Illuminate\Support\Facades\Validator;
 
+use Illuminate\Support\Facades\Validator;
 use App\Http\Requests\StoreCommentRequest;
 use \Staudenmeir\EloquentEagerLimit\HasEagerLimit;
+
+use Unlu\Laravel\Api\QueryBuilder;
 
 
 class CommentController extends Controller
@@ -133,6 +136,43 @@ class CommentController extends Controller
                 'message' => 'Post can not be deleted'
             ], 500);
         }
+    }
+
+
+    //Getting comment by User
+    public function getCommentsByUser(Request $request){
+
+        $users = User::with(['comments' => fn($query) => $query->where('comment', 'like', 'PHP%')])
+            ->whereHas('comments', fn ($query) => 
+            $query->where('comment', 'like', 'PHP%')
+        )->get();
+
+        return $users;
+
+    }
+
+    //test query
+
+    public function getData(Request $request){
+        //var_dump($request->comment); exit('inside the getdata');
+        //$queryBuilder = new QueryBuilder(new User, $request);
+        //return $queryBuilder;
+        //exit();
+        $comm = Comment::with(['commentBy'])
+        ->where('user_id', 1)
+        //->select(['user_id', 'post_id', 'published_at', 'approval_status'])
+        ->where('post_id', 5)
+                    ->where('comment', 'like', '%test%')
+                    //->where('published_at', '!=', NULL)
+                    ->orderBy('id', 'desc')
+                    ->get()
+                    ->paginate(5);
+        //return $comm;
+        //var_dump($comm); exit;
+        return response()->json([
+            'success' => true,
+            'data' => $comm
+        ], 200);
     }
 
 }

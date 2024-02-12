@@ -5,11 +5,11 @@ use Carbon\Carbon;
 use App\Models\Post;
 use App\Models\User;
 use App\Models\Comment;
+use App\Support\Collection;
 use Illuminate\Http\Request;
+use Unlu\Laravel\Api\QueryBuilder;
 use Illuminate\Support\Facades\Auth;
 use App\Http\Requests\StorePostRequest;
-use Illuminate\Database\Eloquent\Builder;
-use \Staudenmeir\EloquentEagerLimit\HasEagerLimit;
 
 
 //unluQqueryBuilder
@@ -17,7 +17,8 @@ use \Staudenmeir\EloquentEagerLimit\HasEagerLimit;
 //use App\Http\Helpers\QueryBuilder\BlogQueryBuilder;
 
 //calling collection
-use App\Support\Collection;
+use Illuminate\Database\Eloquent\Builder;
+use \Staudenmeir\EloquentEagerLimit\HasEagerLimit;
 
 
 class PostController extends Controller
@@ -82,6 +83,96 @@ class PostController extends Controller
 
     }
  
+    public function getPostedBy(Request $request, $user_id){
+        $itemPerPage = 10;
+        if($request->has('per_page'))  $itemPerPage=$request->per_page;
+        $sortby = $request->sortBy ?? "ASC";
+        $title = $request->title ?? "";
+        $content = $request->content ?? "";
+        $posts = Post::
+        //->select(['user_id', 'post_id', 'published_at', 'approval_status'])
+        with(['postedBy'])
+        ->where('user_id', $user_id)        
+        //->where('post_id', $request->post_id)
+        ->when($title, function ($qry) use ($title) {
+            return $qry->where('title', 'like', "% $title %");
+        })
+        ->when($content, function ($qry) use ($content) {
+            return $qry->where('title', 'like', "% $content %");
+        })                    
+        //->Orwhere('content', 'like', "%$request->content%")
+        //->where('published_at', '!=', NULL)
+        ->orderBy('id', $sortby)
+        ->get()
+        ->paginate($itemPerPage);
+        //return $comm;
+        //var_dump($comm); exit;
+        return response()->json([
+            'success' => true,
+            'data' => $posts
+        ], 200);
+    }
+
+
+    public function getCommentedBy(Request $request, $user_id){
+        $itemPerPage = 10;
+        if($request->has('per_page'))  $itemPerPage=$request->per_page;
+        $sortby = $request->sortBy ?? "ASC";
+        $title = $request->title ?? "";
+        $content = $request->content ?? "";
+        $posts = Post::
+        //->select(['user_id', 'post_id', 'published_at', 'approval_status'])
+        with(['commentedBy'])
+        ->where('user_id', $user_id)        
+        //->where('post_id', $request->post_id)
+        ->when($title, function ($qry) use ($title) {
+            return $qry->where('title', 'like', "% $title %");
+        })
+        ->when($content, function ($qry) use ($content) {
+            return $qry->where('title', 'like', "% $content %");
+        })                    
+        //->Orwhere('content', 'like', "%$request->content%")
+        //->where('published_at', '!=', NULL)
+        ->orderBy('id', $sortby)
+        ->get()
+        ->paginate($itemPerPage);
+        //return $comm;
+        //var_dump($comm); exit;
+        return response()->json([
+            'success' => true,
+            'data' => $posts
+        ], 200);
+    }
+
+    //Blog post added by
+    public function getPostByUserId(Request $request, $user_id){
+        exit('inside the getPostedBy');
+        $sortby = $request->sortBy ?? "ASC";
+        $title = $request->title ?? "";
+        $content = $request->content ?? "";
+        $posts = Post::
+        //->select(['user_id', 'post_id', 'published_at', 'approval_status'])
+        with(['postedBy'])
+        ->where('user_id', $user_id)        
+        //->where('post_id', $request->post_id)
+        ->when($title, function ($qry) use ($title) {
+            return $qry->where('title', 'like', "% $title %");
+        })
+        ->when($content, function ($qry) use ($content) {
+            return $qry->where('title', 'like', "% $content %");
+        })                    
+        //->Orwhere('content', 'like', "%$request->content%")
+        //->where('published_at', '!=', NULL)
+        ->orderBy('id', $sortby)
+        ->get()
+        ->paginate(5);
+        //return $comm;
+        //var_dump($comm); exit;
+        return response()->json([
+            'success' => true,
+            'data' => $posts
+        ], 200);
+    }
 
     public function allpostcomments(Request $request, $post_id){
         $itemPerPage = 10;
@@ -91,6 +182,15 @@ class PostController extends Controller
         $search = $request['search'] ?? "";
         $sortby = $request['sortby'] ?? "ASC";
         if($request->has('per_page'))  $itemPerPage=$request->per_page;
+
+        /*
+        $users = QueryBuilder::for(User::class)
+        ->allowedFilters(['name', 'email'])
+        ->paginate()
+        ->appends(request()->query());
+
+        */
+    
         //$comments = Comment::paginate(3);
         //var_dump($request); var_dump($post_id); var_dump($request->title); var_dump($request->comment);
         $comments = Comment::query()
@@ -202,4 +302,5 @@ class PostController extends Controller
         }
     }
 
+    
 }

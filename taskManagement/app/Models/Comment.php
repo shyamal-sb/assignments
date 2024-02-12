@@ -12,10 +12,19 @@ class Comment extends Model
 {
     use HasApiTokens, Notifiable;
 
-    //protected $table = 'comments';
+    protected $table = 'comments';
 
     protected $fillable = [
         'comment', 'user_id', 'post_id', 'approval_status', 'published_at'
     ];
+
+
+    public function commentuser(){
+        return $this->belongsTo(User::class);
+    }
+
+    public function commentedBy(){
+        return $this->belongsTo(User::class,'user_id','id');
+    }
 
 }

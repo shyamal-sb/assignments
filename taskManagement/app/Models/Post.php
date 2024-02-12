@@ -10,7 +10,19 @@ class Post extends Model
 {
     use HasApiTokens, Notifiable;
 
+    protected $table = 'posts';
+
     protected $fillable = [
         'title', 'content', 'user_id', 'published_at'
-    ];   
+    ];  
+    
+
+    public function commentedBy(){
+        return $this->belongsTo(User::class,'user_id','id');
+    }
+
+    
+    public function postedBy(){
+        return $this->belongsTo(User::class,'user_id','id');
+    }
 }

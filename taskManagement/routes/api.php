@@ -76,7 +76,12 @@ Route::get('post/{id}', [PostController::class, 'show'])->middleware('auth:api')
 Route::put('post/update/{id}', [PostController::class, 'update'])->middleware('auth:api');
 Route::delete('post/delete', [PostController::class, 'destroy'])->middleware('auth:api');
 Route::get('post/showComment', [PostController::class, 'showComment'])->middleware('auth:api');
+//Route::get('post/postedby/{$user_id}', [PostController::class, 'getPostByUserId'])->middleware('auth:api');
 
+Route::get('post/commentedby/{user_id}', [PostController::class, 'getCommentedBy'])->middleware('auth:api');
+Route::get('post/postedby/{user_id}', [PostController::class, 'getPostedBy'])->middleware('auth:api');
+
+//post/getPostedBy/1
 //Comments APIs
 Route::post('comment/insert', [CommentController::class, 'store'])->middleware('auth:api');
 Route::get('comments', [CommentController::class, 'index'])->middleware('auth:api');
@@ -84,3 +89,5 @@ Route::get('allcomments', [CommentController::class, 'showAll'])->middleware('au
 Route::get('comment/{id}', [CommentController::class, 'show'])->middleware('auth:api');
 Route::put('comment/update/{id}', [CommentController::class, 'update'])->middleware('auth:api');
 Route::delete('comment/delete', [CommentController::class, 'destroy'])->middleware('auth:api');
+//testing
+Route::get('commentdata/getData', [CommentController::class, 'getData'])->middleware('auth:api');
