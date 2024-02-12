@@ -28,7 +28,8 @@ class StoreCommentRequest extends FormRequest
         switch ($this->method()) {
             case 'POST' :
                 $rules = [
-                        'comment' => 'required|max:1000|unique:comments',
+                        //'comment' => 'required|max:1000|unique:comments',
+                        'comment' => 'required|max:1000',
                         'post_id' => 'required|exists:posts,id',
                         'user_id' => 'required|exists:users,id'
                 ];

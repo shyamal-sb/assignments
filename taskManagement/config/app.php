@@ -163,6 +163,7 @@ return [
         Illuminate\View\ViewServiceProvider::class,
         //
         Laravel\Passport\PassportServiceProvider::class,
+        Unlu\Laravel\Api\ApiQueryBuilderServiceProvider::class,
 
         /*
          * Package Service Providers...

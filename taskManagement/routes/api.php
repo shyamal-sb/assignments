@@ -71,13 +71,13 @@ Route::group(['prefix' => 'auth'], function () {
 Route::post('post/insert', [PostController::class, 'store'])->middleware('auth:api');
 Route::get('posts', [PostController::class, 'index'])->middleware('auth:api');
 Route::get('allposts', [PostController::class, 'showAll'])->middleware('auth:api');
-Route::get('post/allpostcomments', [PostController::class, 'allpostcomments'])->middleware('auth:api');
+Route::get('post/allpostcomments/{post_id}', [PostController::class, 'allpostcomments'])->middleware('auth:api');
 Route::get('post/{id}', [PostController::class, 'show'])->middleware('auth:api');
-Route::put('post/update', [PostController::class, 'update'])->middleware('auth:api');
+Route::put('post/update/{id}', [PostController::class, 'update'])->middleware('auth:api');
 Route::delete('post/delete', [PostController::class, 'destroy'])->middleware('auth:api');
 Route::get('post/showComment', [PostController::class, 'showComment'])->middleware('auth:api');
 
-//Post APIs
+//Comments APIs
 Route::post('comment/insert', [CommentController::class, 'store'])->middleware('auth:api');
 Route::get('comments', [CommentController::class, 'index'])->middleware('auth:api');
 Route::get('allcomments', [CommentController::class, 'showAll'])->middleware('auth:api');

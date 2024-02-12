@@ -38,7 +38,8 @@ class StorePostRequest extends FormRequest
                 $rules = [
                     'title' => 'required|max:300',
                     'content' => 'required|string',
-                    'user_id' => 'required|exists:users,id'
+                    'user_id' => 'required|exists:users,id',
+                    //'id' => 'required|exists:posts,id'
                 ];
                 break;
         }

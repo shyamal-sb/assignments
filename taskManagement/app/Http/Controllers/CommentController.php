@@ -25,24 +25,7 @@ class CommentController extends Controller
      *
      * @return \Illuminate\Http\Response
      */
-    public function indextest(Request $request)
-    {
-        
-        //$comments =array();
-        //$itemPerPage = 10;
-        //$search = $request['search'] ?? "";
-        //$sortby = $request['sortby'] ?? "ASC";
-        //if($request->has('per_page'))  $itemPerPage=$request->per_page;
-        //if($search !=""){ 
-        //    $comments = Comment::where('title', 'like',  '%' . $search . '%')->orderBy('created_at', $sortby);
-        //    $comments = $comments->paginate($itemPerPage);
-        //}else{
-        //    $comments = Comment::paginate($itemPerPage);
-        //}
-        //$json['data']=$comments;
-        //return response()->json(['data'=>$comments]);
-    }
-
+    
     public function index(Request $request)
     {
         $comments = auth()->user()->comments;
@@ -113,9 +96,10 @@ class CommentController extends Controller
             ], 400);
         }
 
-        $data = $request->all();
+        //$data = $request->all();
+        $data = $request->only(['comment', 'post_id', 'user_id']);
         $result = Comment::where('id', $id)->update($data);
-        var_dump($result);
+        //var_dump($result);
         $updated_data = auth()->user()->comments->find($id);
         return response()->json([
             'success' => (bool)$result,
@@ -126,8 +110,9 @@ class CommentController extends Controller
 
     }
  
-    public function destroy($id)
+    public function destroy(Request $request)
     {
+        $id = $request->id;
         $comment = auth()->user()->comments->find($id);
  
         if (!$comment) {
@@ -139,7 +124,8 @@ class CommentController extends Controller
  
         if ($comment->delete()) {
             return response()->json([
-                'success' => true
+                'success' => true,
+                'message' => "Deleted Successfully"
             ]);
         } else {
             return response()->json([

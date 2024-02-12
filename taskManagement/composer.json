@@ -13,7 +13,9 @@
         "laravel/framework": "^6.20.26",
         "laravel/passport": "^9.4",
         "laravel/tinker": "^2.5",
-        "staudenmeir/eloquent-eager-limit": "^1.0"
+        "spatie/laravel-collection-macros": "^6.3",
+        "staudenmeir/eloquent-eager-limit": "^1.0",
+        "unlu/laravel-api-query-builder": "~1.0"
     },
     "require-dev": {
         "facade/ignition": "^1.16.15",

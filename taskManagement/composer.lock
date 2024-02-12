@@ -4,7 +4,7 @@
         "Read more about it at https://getcomposer.org/doc/01-basic-usage.md#installing-dependencies",
         "This file is @generated automatically"
     ],
-    "content-hash": "92d0aee57292eb258acfa9d62a263f43",
+    "content-hash": "d8bc4dbad8b31370fa1def11d1758e07",
     "packages": [
         {
             "name": "carbonphp/carbon-doctrine-types",
@@ -2771,6 +2771,84 @@
             "time": "2022-12-19T21:55:10+00:00"
         },
         {
+            "name": "spatie/laravel-collection-macros",
+            "version": "6.3.1",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/spatie/laravel-collection-macros.git",
+                "reference": "ebef174135eba0226a1bdd0f8cc618cbe0393ccc"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/spatie/laravel-collection-macros/zipball/ebef174135eba0226a1bdd0f8cc618cbe0393ccc",
+                "reference": "ebef174135eba0226a1bdd0f8cc618cbe0393ccc",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/support": "^6.0|^7.0",
+                "php": "^7.2|^8.0"
+            },
+            "require-dev": {
+                "amphp/parallel": "^0.2.5",
+                "amphp/parallel-functions": "^0.1.3",
+                "mockery/mockery": "^1.3",
+                "orchestra/testbench": "^4.0|^5.0",
+                "phpunit/phpunit": "^8.0|^9.0",
+                "symfony/stopwatch": "^4.0|^5.0"
+            },
+            "suggest": {
+                "amphp/parallel-functions": "Required when using the parallel*-macros."
+            },
+            "type": "library",
+            "extra": {
+                "laravel": {
+                    "providers": [
+                        "Spatie\\CollectionMacros\\CollectionMacroServiceProvider"
+                    ]
+                }
+            },
+            "autoload": {
+                "psr-4": {
+                    "Spatie\\CollectionMacros\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Freek Van der Herten",
+                    "email": "freek@spatie.be",
+                    "homepage": "https://github.com/freekmurze",
+                    "role": "Developer"
+                },
+                {
+                    "name": "Sebastian De Deyne",
+                    "email": "sebastian@spatie.be",
+                    "homepage": "https://github.com/sebastiandedeyne",
+                    "role": "Developer"
+                }
+            ],
+            "description": "A set of useful Laravel collection macros",
+            "homepage": "https://github.com/spatie/laravel-collection-macros",
+            "keywords": [
+                "laravel-collection-macros",
+                "spatie"
+            ],
+            "support": {
+                "issues": "https://github.com/spatie/laravel-collection-macros/issues",
+                "source": "https://github.com/spatie/laravel-collection-macros/tree/6.3.1"
+            },
+            "funding": [
+                {
+                    "url": "https://github.com/spatie",
+                    "type": "github"
+                }
+            ],
+            "time": "2021-06-10T21:54:34+00:00"
+        },
+        {
             "name": "staudenmeir/eloquent-eager-limit",
             "version": "v1.4.1",
             "source": {
@@ -5125,6 +5203,53 @@
                 "source": "https://github.com/tijsverkoyen/CssToInlineStyles/tree/v2.2.7"
             },
             "time": "2023-12-08T13:03:43+00:00"
+        },
+        {
+            "name": "unlu/laravel-api-query-builder",
+            "version": "v1.7.0",
+            "source": {
+                "type": "git",
+                "url": "https://github.com/selahattinunlu/laravel-api-query-builder.git",
+                "reference": "2a85dea4ee09046209d09821725f9b1ceb4b97fa"
+            },
+            "dist": {
+                "type": "zip",
+                "url": "https://api.github.com/repos/selahattinunlu/laravel-api-query-builder/zipball/2a85dea4ee09046209d09821725f9b1ceb4b97fa",
+                "reference": "2a85dea4ee09046209d09821725f9b1ceb4b97fa",
+                "shasum": ""
+            },
+            "require": {
+                "illuminate/database": ">=5.0.0",
+                "illuminate/http": ">=5.0.0",
+                "illuminate/support": ">=5.0.0",
+                "php": ">=5.4"
+            },
+            "type": "library",
+            "autoload": {
+                "psr-4": {
+                    "Unlu\\Laravel\\Api\\": "src"
+                }
+            },
+            "notification-url": "https://packagist.org/downloads/",
+            "license": [
+                "MIT"
+            ],
+            "authors": [
+                {
+                    "name": "Selahattin Ünlü",
+                    "email": "selahattin.unlu@yandex.com"
+                }
+            ],
+            "description": "Laravel API Query Builder Package.",
+            "keywords": [
+                "api",
+                "laravel"
+            ],
+            "support": {
+                "issues": "https://github.com/selahattinunlu/laravel-api-query-builder/issues",
+                "source": "https://github.com/selahattinunlu/laravel-api-query-builder/tree/v1.7.0"
+            },
+            "time": "2017-06-13T23:49:29+00:00"
         },
         {
             "name": "vlucas/phpdotenv",
