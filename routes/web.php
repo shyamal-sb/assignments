@@ -3,8 +3,8 @@
 //ADDITIONAL
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\AuthController;
-use App\Http\Controllers\PostController;
-use App\Http\Controllers\CommentController;
+use App\Http\Controllers\v1\Post\PostController;
+use App\Http\Controllers\v1\comment\CommentController;
 
 /*
 |--------------------------------------------------------------------------
